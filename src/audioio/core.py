@@ -17,3 +17,21 @@ class Audioio():
         self.chunk = chunk
         self.pa = pyaudio.PyAudio()
         self._dtype = "float32"
+        # Get all audio input and output
+        self.il = []
+        self.ol = []
+        for i in range(self.pa.get_device_count()):
+            if self.pa.get_device_info_by_index(i)['maxInputChannels'] > 0:
+                self.il.append(self.pa.get_device_info_by_index(i))
+            if self.pa.get_device_info_by_index(i)['maxOutputChannels'] > 0:
+                self.ol.append(self.pa.get_device_info_by_index(i))
+
+    @property
+    def dtype(self):
+        return self._dtype
+
+    def get_device(self):
+        """Print audio all available devices"""
+        for i in range(self.pa.get_device_count()):
+            print(self.pa.get_device_info_by_index(i))
+
