@@ -38,7 +38,7 @@ class Audioio():
     def dtype(self):
         return self._dtype
 
-    def get_device(self):
+    def get_devices(self):
         """Print audio all available devices"""
         for i in range(self.pa.get_device_count()):
             print(self.pa.get_device_info_by_index(i))

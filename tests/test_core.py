@@ -20,6 +20,6 @@ class TestCore(unittest.TestCase):
             print("test_code -> test_dtype: dtyp has no setter. Not supposed to...")
 
     def test_access_audio_devices(self):
-        self.aio.get_device()
-        self.assertGreater(len(self.aio.il), 0)
+        self.aio.get_devices()
+        self.assertGreater(len(self.aio.il), 1)
         self.assertGreater(len(self.aio.ol), 0)

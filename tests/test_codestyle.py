@@ -5,6 +5,9 @@ import pycodestyle
 class TestCodeFormat(unittest.TestCase):
 
     def test_conformance(self):
+        print("Current directory: ")
+        import os
+        print(os.getcwd())
         """Test that we conform to PEP-8."""
         # W291 is trailing whitespace, E702 multiple statements in 1 line
         # E741 ambiguous variable name
