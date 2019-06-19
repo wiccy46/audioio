@@ -1,3 +1,4 @@
+from audioio.core import Audioio
 import time, sys, threading
 import logging
 import numpy as np
@@ -15,10 +16,18 @@ except ImportError:
 from PyQt5.Qt import PYQT_VERSION_STR  # This is only for testing. 
 
 
-class gui():
-    def __init__(self, aio):
-        self.aio = aio
-
+class App():
+    def __init__(self, aio=None):
+        if aio is None:
+            # create a new aio
+            pass
+        else:
+            if isinstance(aio, Audioio):
+                self.aio = aio
+            else:
+                # print("Got error msg")
+                msg = "aio argument needs to be an Audioio object,"
+                " or None which will create a new Audioio obejct."
+                raise TypeError(msg)
     def checkqt(self):
-        print(PYQT_VERSION_STR)
-    
+        print("PyQt5 version: " + PYQT_VERSION_STR)
