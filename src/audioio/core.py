@@ -35,3 +35,25 @@ class Audioio():
         for i in range(self.pa.get_device_count()):
             print(self.pa.get_device_info_by_index(i))
 
+    def set_device(self, input=0, output=1):
+        # check how to set default devices.
+        pass
+
+    def _play_callback(self, in_data, frame_count, time_info, flag):
+        """Audio callback when stream is open. This is only used for playing, not for recording.
+
+        Args:
+          in_data (bytes): audio inputs per frame/chunk
+          frame_count (int): counting the frame
+
+        Returns:
+          out_data (TBD): output data per frame
+          status (paStatus): paContinute or paComplete indicating whether the stream is on or not.
+        """
+        if (self.frameCount < self.total_chunk):
+            out_data = self._outputgain(self.play_data[self.frameCount])
+            self.frameCount += 1
+            return out_data, pyaudio.paContinue
+        else:  # The last one .
+            out_data = bytes(np.zeros(self.chunk * self.output_channels))
+            return out_data, pyaudio.paComplete
