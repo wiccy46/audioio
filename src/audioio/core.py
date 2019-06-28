@@ -1,6 +1,7 @@
 import numpy as np
 import pyaudio
 import logging
+import time
 
 _LOGGER = logging.getLogger(__name__)
 _LOGGER.addHandler(logging.NullHandler())
@@ -84,6 +85,12 @@ class Audioio():
             frames_per_buffer=self.chunk,
             stream_callback=self._record_callback)
         self.rec_stream.start_stream()
+        # if dur is not None:
+        #     # switch off stream afterward.
+        #     time.sleep(dur)
+        #     self.rec_stream.stop_stream()
+        #     self.rec_stream.close()
+        #
 
     def _record_callback(self, in_data, frame_count, time_info, flag):
         """Callback for record stream"""
@@ -91,6 +98,8 @@ class Audioio():
         # The * self.ivols[0] here is problematics.
         # float32 is not 32 bit.
         audio_data = (np.frombuffer(in_data, dtype=np.float32) * self.input_gains).astype(np.float32)
+        """This is probably not an efficient way. Try to use limiter or compressor instead"""
+        audio_data = np.clip(audio_data, -1., 1.)
         # audio_data = audio_data.reshape((len(audio_data) // self.in_chan, self.in_chan))
 
         # if self.emitsignal:

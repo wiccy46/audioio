@@ -17,6 +17,9 @@ class TestRecord(unittest.TestCase):
     def test_recording(self):
         """test recording """
         aio = Audioio(sr=44100, chunk=256)
+
+        # Check if stream is open
+
         """
             How to validate recording works, 
             1. stream is open 
@@ -29,8 +32,16 @@ class TestRecord(unittest.TestCase):
         """
 
         aio.record(dur=3.0)   # Need a better way to validate
+        self.assertTrue(aio.rec_stream.is_active(), True)
+        # print("Stream status: ", aio.rec_stream.is_active())
         time.sleep(3.0)
-        output = aio.record_buffer.flatten()
+        output = np.array(aio.record_buffer).flatten()
+
+        for i in range(len(output)):
+            if abs(output[i]) > 2.1e-10:
+                print("First Onset found at ", i)
+                break
+
         plt.plot(output)
         plt.show()
 
