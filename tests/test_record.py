@@ -31,7 +31,7 @@ class TestRecord(unittest.TestCase):
             7. There is a coorect amount of data after recording. 
         """
 
-        aio.record(dur=3.0)   # Need a better way to validate
+        aio.record()   # Need a better way to validate
         self.assertTrue(aio.rec_stream.is_active(), True)
         # print("Stream status: ", aio.rec_stream.is_active())
         time.sleep(3.0)
