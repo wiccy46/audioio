@@ -2,6 +2,9 @@ from audioio.core import Audioio
 import numpy as np
 import matplotlib.pyplot as plt
 import time
+import logging
+logging.basicConfig(level=logging.INFO)
+
 
 aio = Audioio(sr=44100, bs=256)
 
@@ -18,16 +21,21 @@ aio = Audioio(sr=44100, bs=256)
     7. There is a coorect amount of data after recording. 
 """
 
-aio.record()   # Need a better way to validate
+aio.record(dur=3, block=True)   # Need a better way to validate
 
+# print(aio.rec_stream.get_input_latency())
+# print(aio.rec_stream.get_output_latency())
 # print("Stream status: ", aio.rec_stream.is_active())
-time.sleep(3.0)
+
+# print(aio.test_time)
+
 output = np.array(aio.record_buffer).flatten()
 
-for i in range(len(output)):
-    if abs(output[i]) > 2.1e-10:
-        print("First Onset found at ", i)
-        break
+
+# for i in range(len(output)):
+#     if abs(output[i]) > 2.1e-10:
+#         print("First Onset found at ", i)
+#         break
 
 plt.plot(output)
 plt.show()

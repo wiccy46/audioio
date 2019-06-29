@@ -18,7 +18,7 @@ class Audioio():
     TODO: make sure everytime a new device is set, the parameters are updated.
     """
 
-    def __init__(self, sr=44100, bs=256, in_device=0, out_device=1):
+    def __init__(self, sr=44100, bs=1024, in_device=0, out_device=1):
         self.sr = sr
         self.bs = bs
         self.pa = pyaudio.PyAudio()
@@ -46,9 +46,8 @@ class Audioio():
             self.out_idx = self.pa.get_default_output_device_info()['index']
         else:
             self.out_idx = out_device
-        print("Input and output")
-        print(self.in_idx)
-        print(self.out_idx)
+        self.test_time = []
+
 
     @property
     def dtype(self):
@@ -63,7 +62,7 @@ class Audioio():
         # check how to set default devices.
         pass
 
-    def record(self):
+    def record(self, block=False, dur=None):
         """Recording Audio
 
         Args:
@@ -85,18 +84,40 @@ class Audioio():
         self.in_chan = 1  # This needs to be done cleverly 
         self.out_chan = 1  # also need clever way 
         # self.input_channels = self.pa.get_device_info_by_index(self.input_idx).get("maxInputChannels")
-        self.rec_stream = self.pa.open(
-            format=pyaudio.paFloat32,
-            channels=self.out_chan,
-            rate=self.sr,
-            input=True,
-            output=True,  # Removed input_device_index. As it should listen to all.
-            input_device_index=self.in_idx,
-            output_device_index=self.out_idx,
-            frames_per_buffer=self.bs,
-            stream_callback=self._record_callback)
-        self.rec_stream.start_stream()
 
+
+        if dur is not None and block:
+            # blocking recording 
+            self.rec_dur = int(self.sr * dur)
+            _LOGGER.info("fix duration start.")
+            rec_stream = self.pa.open(
+                format=pyaudio.paFloat32,
+                channels=self.out_chan,
+                rate=self.sr,
+                input=True,
+                output=True,  # Removed input_device_index. As it should listen to all.
+                input_device_index=self.in_idx,
+                output_device_index=self.out_idx,
+                frames_per_buffer=self.bs)
+            for i in range(0, int(self.sr / self.bs * dur)):
+                self.record_buffer.append(np.frombuffer(rec_stream.read(self.bs), dtype=np.float32))
+            rec_stream.stop_stream()
+            rec_stream.close()
+            _LOGGER.info("fix duration stop.")
+
+        else:
+            # non blocking mode 
+            self.rec_stream = self.pa.open(
+                format=pyaudio.paFloat32,
+                channels=self.out_chan,
+                rate=self.sr,
+                input=True,
+                output=True,  # Removed input_device_index. As it should listen to all.
+                input_device_index=self.in_idx,
+                output_device_index=self.out_idx,
+                frames_per_buffer=self.bs,
+                stream_callback=self._record_callback)
+            self.rec_stream.start_stream()
 
     def _record_callback(self, in_data, frame_count, time_info, flag):
         """Callback for record stream"""
@@ -104,8 +125,11 @@ class Audioio():
         # The * self.ivols[0] here is problematics.
         # float32 is not 32 bit.
 
-
-        audio_data = np.frombuffer(in_data, dtype=np.float32)
+        """ time_info: {'input_buffer_adc_time': 15962.05622079555, 'current_time': 15962.064067210002, 'output_buffer_dac_time': 15962.078080205982}"""
+        # audio_data = np.frombuffer(in_data, dtype=np.float32)
+        
+  
+        self.test_time.append(time_info['output_buffer_dac_time'] - time_info['input_buffer_adc_time'])
         # """This is probably not an efficient way. Try to use limiter or compressor instead"""
         # # audio_data = np.clip(audio_data, -1., 1.) * 0.8  # Reduce gain 
         # # audio_data = audio_data.reshape((len(audio_data) // self.in_chan, self.in_chan))
@@ -116,7 +140,7 @@ class Audioio():
 
         # out = (np.sin(2 * np.pi * np.linspace(0, 1., self.bs)) * 0.5)
         # self.record_buffer.append(in_data)
-        return audio_data, pyaudio.paContinue
+        return in_data, pyaudio.paContinue
 
     # def _play_callback(self, in_data, frame_count, time_info, flag):
     #     """Audio callback when stream is open. This is only used for playing, not for recording.
