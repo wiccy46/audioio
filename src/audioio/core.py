@@ -35,9 +35,7 @@ class Audioio():
         self.in_gains = [1.]  # needs to be scaled based on the channels
         self.out_gains = [1.]
         self.record_buffer = []  # A buffer for long audio being recorded in.
-        # Update channels amount based on device 
-        self.in_chan = self.pa.get_device_info_by_index(self.in_idx)['maxInputChannels'] 
-        self.out_chan = self.pa.get_device_info_by_index(self.out_idx)['maxOutputChannels']
+
         self.empty_buffer = np.zeros((self.bs, 1), dtype=self._dtype)
         if in_device is None:
             self.in_idx = self.pa.get_default_input_device_info()['index']
@@ -49,6 +47,9 @@ class Audioio():
         else:
             self.out_idx = out_device
         self.test_time = []
+        # Update channels amount based on device
+        self.in_chan = self.pa.get_device_info_by_index(self.in_idx)['maxInputChannels']
+        self.out_chan = self.pa.get_device_info_by_index(self.out_idx)['maxOutputChannels']
 
     @property
     def dtype(self):
@@ -103,6 +104,7 @@ class Audioio():
                 input_device_index=self.in_idx,
                 output_device_index=self.out_idx,
                 frames_per_buffer=self.bs)
+            
             for i in range(0, int(self.sr / self.bs * dur)):
                 self.record_buffer.append(np.frombuffer(rec_stream.read(self.bs), dtype=np.float32))
             rec_stream.stop_stream()
@@ -131,16 +133,17 @@ class Audioio():
         # self.test_time.append(time_info['output_buffer_dac_time'] - time_info['input_buffer_adc_time'])
         # """This is probably not an efficient way. Try to use limiter or compressor instead"""
 
+        audio_data = self.processing(audio_data)
 
         # # audio_data = audio_data.reshape((len(audio_data) // self.in_chan, self.in_chan))
 
-        # # if self.emitsignal:
-        # #     # This part is for sending audio to pyqt for realtime plotting. Disable it for better performance.
-        # #     self.qt_signal.emit(audio_data)
+        out = audio_data.astype(np.float32)  # At this stage it is finalized 
+        self.record_buffer.append(out)  # Record data
+        return out, pyaudio.paContinue
 
-        # out = (np.sin(2 * np.pi * np.linspace(0, 1., self.bs)) * 0.5)
-        self.record_buffer.append(audio_data)
-        return audio_data.astype(np.float32), pyaudio.paContinue
+    def processing(self, x):
+        return x  # Currently it is not doing anything. 
+        
 
     # def _play_callback(self, in_data, frame_count, time_info, flag):
     #     """Audio callback when stream is open. This is only used for playing, not for recording.

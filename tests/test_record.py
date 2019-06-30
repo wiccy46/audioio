@@ -1,9 +1,9 @@
 import unittest
-from audioio.core import Audioio
 import time
 import matplotlib.pyplot as plt
 import numpy as np
 import logging
+from audioio.core import Audioio
 logging.basicConfig(level=logging.INFO)
 
 class TestRecord(unittest.TestCase):
@@ -15,40 +15,28 @@ class TestRecord(unittest.TestCase):
     def tearDown(self):
         pass
 
-    def test_recording(self):
+    def test_stream_open(self):
         """test recording """
         aio = Audioio(sr=44100, bs=256)
 
         # Check if stream is open
 
-        """
-            How to validate recording works, 
-            1. stream is open 
-            3. Sound is coming out 
-            4. Audio gain is applied successfully 
-            5. Record data in correct dimension 
-            6. Output data in correct format (bytes) 
-            7. There is a coorect amount of data after recording. 
-            7. Stream should be close after ward. 
-        """
-
         # 1 Check stream open 
-        aio.record()   # Need a better way to validate
+        aio.record(gain=[0.5])   # Need a better way to validate
         self.assertTrue(aio.rec_stream.is_active(), True)
+        # check gain update
+        self.assertEqual(aio.in_gains, [0.5])
 
-        # 2. Block mode recording.:
+    def test_block_mode(self):
+        aio = Audioio(sr=44100, bs=256)
+
+        # Block mode recording.:
         aio.record(dur=3, block=True)
         output = np.array(aio.record_buffer).flatten()
+        # recording result should be np.float32
+        self.assertEqual(output.dtype, 'float32')
+        # record length should be correct
+        self.assertAlmostEqual(output.shape[0]/aio.in_chan/aio.sr, 3., places=2)
 
-        # 3. recording result should be np.float32
-        self.assertEqual(output.dtype, 'np.float32')
-
-        # 4. record length should be correct
-        self.assertAlmostEqual(output, 3 * 44100 * aio.in_chan)
-
-
-
-        plt.plot(output)
-        plt.show()
 
 
