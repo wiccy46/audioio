@@ -32,8 +32,8 @@ class Audioio():
             if self.pa.get_device_info_by_index(i)['maxOutputChannels'] > 0:
                 self.ol.append(self.pa.get_device_info_by_index(i))
 
-        self.input_gains = [1.]  # needs to be scaled based on the channels
-        self.output_gains = [1.]
+        self.in_gains = [1.]  # needs to be scaled based on the channels
+        self.out_gains = [1.]
         self.record_buffer = []  # A buffer for long audio being recorded in.
         self.in_chan = 1  # how many channels of inputs the device has.
         self.empty_buffer = np.zeros((self.bs, 1), dtype=self._dtype)
@@ -62,21 +62,22 @@ class Audioio():
         # check how to set default devices.
         pass
 
-    def record(self, block=False, dur=None):
+    def record(self, gain=[1.], block=False, dur=None):
         """Recording Audio
 
         Args:
             dur (float): if None, recording indefinitely, else, record dur seconds.
+            block (bool): block mode 
 
         """
-        # try:
-        #     # restarting recording without closing stream, resulting an unstoppable stream.
-        #     # This can happen in Jupyter when you trigger record multple times without stopping it first.
-        #     self.rec_stream.stop_stream()
-        #     self.rec_stream.close()
-        #    _LOGGER.debug("record stream close. ")
-        # except AttributeError:
-        #     pass
+        try:
+            # restarting recording without closing stream, resulting an unstoppable stream.
+            # This can happen in Jupyter when you trigger record multple times without stopping it first.
+            self.rec_stream.stop_stream()
+            self.rec_stream.close()
+            _LOGGER.info("record stream close. ")
+        except AttributeError:
+            pass
 
         _LOGGER.info("Start Recording")
         self.record_buffer = []  # Clear the bufferlist for new recording.
@@ -84,7 +85,7 @@ class Audioio():
         self.in_chan = 1  # This needs to be done cleverly 
         self.out_chan = 1  # also need clever way 
         # self.input_channels = self.pa.get_device_info_by_index(self.input_idx).get("maxInputChannels")
-
+        self.in_gains = gain
 
         if dur is not None and block:
             # blocking recording 
@@ -126,7 +127,7 @@ class Audioio():
         # float32 is not 32 bit.
 
         """ time_info: {'input_buffer_adc_time': 15962.05622079555, 'current_time': 15962.064067210002, 'output_buffer_dac_time': 15962.078080205982}"""
-        # audio_data = np.frombuffer(in_data, dtype=np.float32)
+        audio_data = np.frombuffer(in_data, dtype=np.float32) * self.in_gains
         
   
         self.test_time.append(time_info['output_buffer_dac_time'] - time_info['input_buffer_adc_time'])
@@ -139,8 +140,8 @@ class Audioio():
         # #     self.qt_signal.emit(audio_data)
 
         # out = (np.sin(2 * np.pi * np.linspace(0, 1., self.bs)) * 0.5)
-        # self.record_buffer.append(in_data)
-        return in_data, pyaudio.paContinue
+        self.record_buffer.append(audio_data)
+        return audio_data.astype(np.float32), pyaudio.paContinue
 
     # def _play_callback(self, in_data, frame_count, time_info, flag):
     #     """Audio callback when stream is open. This is only used for playing, not for recording.

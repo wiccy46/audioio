@@ -21,7 +21,7 @@ aio = Audioio(sr=44100, bs=256)
     7. There is a coorect amount of data after recording. 
 """
 
-aio.record(dur=3, block=True)   # Need a better way to validate
+# aio.record(dur=3, block=True)   # Need a better way to validate
 
 # print(aio.rec_stream.get_input_latency())
 # print(aio.rec_stream.get_output_latency())
@@ -29,7 +29,12 @@ aio.record(dur=3, block=True)   # Need a better way to validate
 
 # print(aio.test_time)
 
-output = np.array(aio.record_buffer).flatten()
+aio.record(gain=[0.5], block=False)
+time.sleep(3)
+
+output = np.array(aio.record_buffer)
+
+print(output.shape)
 
 
 # for i in range(len(output)):
