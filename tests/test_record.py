@@ -15,7 +15,6 @@ class TestRecord(unittest.TestCase):
     def tearDown(self):
         pass
 
-
     def test_recording(self):
         """test recording """
         aio = Audioio(sr=44100, bs=256)
@@ -39,13 +38,15 @@ class TestRecord(unittest.TestCase):
 
         # 2. Block mode recording.:
         aio.record(dur=3, block=True)
-
         output = np.array(aio.record_buffer).flatten()
 
-        for i in range(len(output)):
-            if abs(output[i]) > 2.1e-10:
-                print("First Onset found at ", i)
-                break
+        # 3. recording result should be np.float32
+        self.assertEqual(output.dtype, 'np.float32')
+
+        # 4. record length should be correct
+        self.assertAlmostEqual(output, 3 * 44100 * aio.in_chan)
+
+
 
         plt.plot(output)
         plt.show()

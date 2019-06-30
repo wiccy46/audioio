@@ -35,7 +35,9 @@ class Audioio():
         self.in_gains = [1.]  # needs to be scaled based on the channels
         self.out_gains = [1.]
         self.record_buffer = []  # A buffer for long audio being recorded in.
-        self.in_chan = 1  # how many channels of inputs the device has.
+        # Update channels amount based on device 
+        self.in_chan = self.pa.get_device_info_by_index(self.in_idx)['maxInputChannels'] 
+        self.out_chan = self.pa.get_device_info_by_index(self.out_idx)['maxOutputChannels']
         self.empty_buffer = np.zeros((self.bs, 1), dtype=self._dtype)
         if in_device is None:
             self.in_idx = self.pa.get_default_input_device_info()['index']
@@ -48,10 +50,13 @@ class Audioio():
             self.out_idx = out_device
         self.test_time = []
 
-
     @property
     def dtype(self):
         return self._dtype
+
+    def info(self):
+        """Print all necessary information about the class"""
+        pass  #TODO
 
     def get_devices(self):
         """Print audio all available devices"""
@@ -59,8 +64,10 @@ class Audioio():
             print(self.pa.get_device_info_by_index(i))
 
     def set_device(self, in_device=0, out_device=1):
-        # check how to set default devices.
-        pass
+        # TODO check how to set default devices.
+        # TO take index or name. 
+        self.in_chan = self.pa.get_device_info_by_index(self.in_idx)['maxInputChannels'] 
+        self.out_chan = self.pa.get_device_info_by_index(self.out_idx)['maxOutputChannels']
 
     def record(self, gain=[1.], block=False, dur=None):
         """Recording Audio
@@ -68,7 +75,6 @@ class Audioio():
         Args:
             dur (float): if None, recording indefinitely, else, record dur seconds.
             block (bool): block mode 
-
         """
         try:
             # restarting recording without closing stream, resulting an unstoppable stream.
@@ -81,9 +87,6 @@ class Audioio():
 
         _LOGGER.info("Start Recording")
         self.record_buffer = []  # Clear the bufferlist for new recording.
-        # Input channels will be used to reshaping in_data during recording.
-        self.in_chan = 1  # This needs to be done cleverly 
-        self.out_chan = 1  # also need clever way 
         # self.input_channels = self.pa.get_device_info_by_index(self.input_idx).get("maxInputChannels")
         self.in_gains = gain
 
@@ -122,17 +125,13 @@ class Audioio():
 
     def _record_callback(self, in_data, frame_count, time_info, flag):
         """Callback for record stream"""
-
-        # The * self.ivols[0] here is problematics.
-        # float32 is not 32 bit.
-
-        """ time_info: {'input_buffer_adc_time': 15962.05622079555, 'current_time': 15962.064067210002, 'output_buffer_dac_time': 15962.078080205982}"""
-        audio_data = np.frombuffer(in_data, dtype=np.float32) * self.in_gains
+        audio_data = np.frombuffer(in_data, dtype=np.float32) * self.in_gains  # convert bytes to float. 
+        # Next work with shapes if the data is in higher dimension. 
         
-  
-        self.test_time.append(time_info['output_buffer_dac_time'] - time_info['input_buffer_adc_time'])
+        # self.test_time.append(time_info['output_buffer_dac_time'] - time_info['input_buffer_adc_time'])
         # """This is probably not an efficient way. Try to use limiter or compressor instead"""
-        # # audio_data = np.clip(audio_data, -1., 1.) * 0.8  # Reduce gain 
+
+
         # # audio_data = audio_data.reshape((len(audio_data) // self.in_chan, self.in_chan))
 
         # # if self.emitsignal:

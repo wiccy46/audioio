@@ -2,6 +2,7 @@
 
 import numpy as np
 import time 
+from audioio.core import Audioio
 
 def dbamp(db):
     """Convert db to amplitude
