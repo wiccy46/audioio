@@ -1,6 +1,4 @@
 import unittest
-import time
-import matplotlib.pyplot as plt
 import numpy as np
 import logging
 from audioio.core import Audioio
@@ -21,7 +19,7 @@ class TestRecord(unittest.TestCase):
 
         # Check if stream is open
 
-        # 1 Check stream open 
+        # 1 Check stream open
         aio.record(gain=[0.5])   # Need a better way to validate
         self.assertTrue(aio.rec_stream.is_active(), True)
         # check gain update

@@ -57,7 +57,13 @@ class Audioio():
 
     def info(self):
         """Print all necessary information about the class"""
-        pass  #TODO
+        in_dict = self.pa.get_device_info_by_index(self.in_idx)
+        out_dict = self.pa.get_device_info_by_index(self.out_idx)
+
+        msg = f"""Audioio: sr={self.sr}, bs={self.bs}, \n 
+                Input: {in_dict['name']}, index: {in_dict['index']}, channels: {in_dict['maxInputChannels']}, \n 
+                Output: {out_dict['name']}, index: {out_dict['index']}, channels: {out_dict['maxOutputChannels']}"""
+        print(msg)
 
     def get_devices(self):
         """Print audio all available devices"""

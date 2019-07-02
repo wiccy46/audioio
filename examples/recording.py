@@ -1,25 +1,14 @@
-from audioio.core import Audioio
+import time
 import numpy as np
 import matplotlib.pyplot as plt
-import time
 import logging
+from audioio.core import Audioio
 logging.basicConfig(level=logging.INFO)
-
 
 aio = Audioio(sr=44100, bs=256)
 
 # Check if stream is open
 
-"""
-    How to validate recording works, 
-    1. stream is open 
-    2. status is at paContinue
-    3. Sound is coming out 
-    4. Audio gain is applied successfully 
-    5. Record data in correct dimension 
-    6. Output data in correct format (bytes) 
-    7. There is a coorect amount of data after recording. 
-"""
 
 # aio.record(dur=3, block=True)   # Need a better way to validate
 

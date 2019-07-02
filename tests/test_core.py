@@ -1,3 +1,4 @@
+# Test core parts
 import unittest
 from audioio.core import Audioio
 import logging
@@ -19,10 +20,12 @@ class TestCore(unittest.TestCase):
             print("test_code -> test_dtype: dtyp has no setter. Not supposed to...")
 
     def test_access_audio_devices(self):
+        """Check default audio device"""
         self.aio.get_devices()
         # # This is not good for other devices such as linux
         # self.assertGreater(len(self.aio.il), 1)
         # self.assertGreater(len(self.aio.ol), 0)
 
     def test_info(self):
-        pass
+        # Give info about the device
+        self.aio.info()
