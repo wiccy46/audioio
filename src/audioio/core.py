@@ -6,7 +6,7 @@ import time
 _LOGGER = logging.getLogger(__name__)
 _LOGGER.addHandler(logging.NullHandler())
 
-class Audioio():
+class BasicAudioio(object):
     """Core class of the audioio, currently only dealing with float32, later to add more dtype in, such as int16
 
     Args:
@@ -47,13 +47,46 @@ class Audioio():
         else:
             self.out_idx = out_device
         self.test_time = []
-        # Update channels amount based on device
-        self.in_chan = self.pa.get_device_info_by_index(self.in_idx)['maxInputChannels']
-        self.out_chan = self.pa.get_device_info_by_index(self.out_idx)['maxOutputChannels']
+
 
     @property
     def dtype(self):
         return self._dtype
+
+    @property
+    def in_idx(self):
+        # Input index
+        return self._in_idx
+
+    @in_idx.setter
+    def in_idx(self, val):
+        self._in_idx = val
+        self._in_chan = self.pa.get_device_info_by_index(self.in_idx)['maxInputChannels'] 
+
+    @property
+    def in_chan(self):
+        # Input channels
+        return self._in_chan
+
+    @property
+    def out_idx(self):
+        # Output index
+        return self._out_idx
+
+    @out_idx.setter
+    def out_idx(self, val):
+        self._out_idx = val
+        self.out_chan = self.pa.get_device_info_by_index(self.out_idx)['maxOutputChannels']
+
+    @property
+    def out_chan(self):
+        # Output channels 
+        return self._out_chan
+
+    @out_chan.setter
+    def out_chan(self, val):
+        self._out_idx = val
+
 
     def info(self):
         """Print all necessary information about the class"""
@@ -65,107 +98,24 @@ class Audioio():
                 Output: {out_dict['name']}, index: {out_dict['index']}, channels: {out_dict['maxOutputChannels']}"""
         print(msg)
 
-    def get_devices(self):
+    def get_devices(self, item="all"):
         """Print audio all available devices"""
-        for i in range(self.pa.get_device_count()):
-            print(self.pa.get_device_info_by_index(i))
+        if item == "all":
+            for i in range(self.pa.get_device_count()):
+                print(self.pa.get_device_info_by_index(i))
+        else:
+            for i in range(self.pa.get_device_count()):
+                print(self.pa.get_device_info_by_index(i)[item])
 
     def set_device(self, in_device=0, out_device=1):
-        # TODO check how to set default devices.
-        # TO take index or name. 
-        self.in_chan = self.pa.get_device_info_by_index(self.in_idx)['maxInputChannels'] 
-        self.out_chan = self.pa.get_device_info_by_index(self.out_idx)['maxOutputChannels']
 
-    def record(self, gain=[1.], block=False, dur=None):
-        """Recording Audio
-
-        Args:
-            dur (float): if None, recording indefinitely, else, record dur seconds.
-            block (bool): block mode 
-        """
-        try:
-            # restarting recording without closing stream, resulting an unstoppable stream.
-            # This can happen in Jupyter when you trigger record multple times without stopping it first.
-            self.rec_stream.stop_stream()
-            self.rec_stream.close()
-            _LOGGER.info("record stream close. ")
-        except AttributeError:
-            pass
-
-        _LOGGER.info("Start Recording")
-        self.record_buffer = []  # Clear the bufferlist for new recording.
-        # self.input_channels = self.pa.get_device_info_by_index(self.input_idx).get("maxInputChannels")
-        self.in_gains = gain
-
-        if dur is not None and block:
-            # blocking recording 
-            self.rec_dur = int(self.sr * dur)
-            _LOGGER.info("fix duration start.")
-            rec_stream = self.pa.open(
-                format=pyaudio.paFloat32,
-                channels=self.out_chan,
-                rate=self.sr,
-                input=True,
-                output=True,  # Removed input_device_index. As it should listen to all.
-                input_device_index=self.in_idx,
-                output_device_index=self.out_idx,
-                frames_per_buffer=self.bs)
+        if isinstance(in_device, int):
+            self.in_idx = in_device
+        elif in_device == 'default' or in_device == 'Default':
+            self.in_idx = self.pa.get_default_input_device_info()['index']
             
-            for i in range(0, int(self.sr / self.bs * dur)):
-                self.record_buffer.append(np.frombuffer(rec_stream.read(self.bs), dtype=np.float32))
-            rec_stream.stop_stream()
-            rec_stream.close()
-            _LOGGER.info("fix duration stop.")
+        if isinstance(out_device, int):
+            self.out_idx = out_device
+        elif out_device == 'default' or out_device == 'Default':
+            self.out_idx = self.pa.get_default_output_device_info()['index']
 
-        else:
-            # non blocking mode 
-            self.rec_stream = self.pa.open(
-                format=pyaudio.paFloat32,
-                channels=self.out_chan,
-                rate=self.sr,
-                input=True,
-                output=True,  # Removed input_device_index. As it should listen to all.
-                input_device_index=self.in_idx,
-                output_device_index=self.out_idx,
-                frames_per_buffer=self.bs,
-                stream_callback=self._record_callback)
-            self.rec_stream.start_stream()
-
-    def _record_callback(self, in_data, frame_count, time_info, flag):
-        """Callback for record stream"""
-        audio_data = np.frombuffer(in_data, dtype=np.float32) * self.in_gains  # convert bytes to float. 
-        # Next work with shapes if the data is in higher dimension. 
-        
-        # self.test_time.append(time_info['output_buffer_dac_time'] - time_info['input_buffer_adc_time'])
-        # """This is probably not an efficient way. Try to use limiter or compressor instead"""
-
-        audio_data = self.processing(audio_data)
-
-        # # audio_data = audio_data.reshape((len(audio_data) // self.in_chan, self.in_chan))
-
-        out = audio_data.astype(np.float32)  # At this stage it is finalized 
-        self.record_buffer.append(out)  # Record data
-        return out, pyaudio.paContinue
-
-    def processing(self, x):
-        return x  # Currently it is not doing anything. 
-        
-
-    # def _play_callback(self, in_data, frame_count, time_info, flag):
-    #     """Audio callback when stream is open. This is only used for playing, not for recording.
-
-    #     Args:
-    #       in_data (bytes): audio inputs per frame/chunk
-    #       frame_count (int): counting the frame
-
-    #     Returns:
-    #       out_data (TBD): output data per frame
-    #       status (paStatus): paContinute or paComplete indicating whether the stream is on or not.
-    #     """
-    #     if (self.frameCount < self.total_chunk):
-    #         out_data = self._outputgain(self.play_data[self.frameCount])
-    #         self.frameCount += 1
-    #         return out_data, pyaudio.paContinue
-    #     else:  # The last one .
-    #         out_data = bytes(np.zeros(self.chunk * self.output_channels))
-    #         return out_data, pyaudio.paComplete
