@@ -11,8 +11,9 @@ _LOGGER.addHandler(logging.NullHandler())
 
 
 class Audioio(BasicAudioio):
-    def __init__(self, sr=44100, bs=1024, in_device=0, out_device=1):
+    def __init__(self, sr=44100, bs=1024, in_device=None, out_device=None):
         super(Audioio, self).__init__(sr=sr, bs=bs, in_device=in_device, out_device=out_device)
+        self.empty_buffer = np.zeros((self.bs, 1), dtype=self._dtype)
 
     def record(self, gain=[1.], block=False, dur=None):
         """Recording Audio
@@ -87,4 +88,18 @@ class Audioio(BasicAudioio):
 
     def processing(self, x):
         return x  # Currently it is not doing anything. 
+
+    def __repr__(self):
+        state = False
+        try:
+            if self.rec_stream:
+                state = self.rec_stream.is_active()
+            msg = f"""Audio Server Info: sr: {self.sr}, blocksize: {self.bs}, Stream Active: {state}, 
+            Input Device: {self.in_dict['name']}, Index: {self.in_dict['index']},
+            Output Device: {self.out_dict['name']}, Index: {self.out_dict['index']}"""
+        except AttributeError:
+            msg = f"""Audio Server Info: sr: {self.sr}, blocksize: {self.bs}, Stream Active: {False}, 
+            Input Device: {self.in_dict['name']}, Index: {self.in_dict['index']},
+            Output Device: {self.out_dict['name']}, Index: {self.out_dict['index']}"""    
+        return msg
         

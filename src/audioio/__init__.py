@@ -10,8 +10,6 @@ except DistributionNotFound:
 finally:
     del get_distribution, DistributionNotFound
 
-
-
 from .core import BasicAudioio
 from .console import Audioio
 from .utils import dbamp
