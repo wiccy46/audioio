@@ -76,7 +76,7 @@ class BasicAudioio(object):
     @out_idx.setter
     def out_idx(self, val):
         self._out_idx = val
-        self.out_chan = self.pa.get_device_info_by_index(self.out_idx)['maxOutputChannels']
+        self._out_chan = self.pa.get_device_info_by_index(self.out_idx)['maxOutputChannels']
 
     @property
     def out_chan(self):
@@ -87,19 +87,17 @@ class BasicAudioio(object):
     def out_chan(self, val):
         self._out_idx = val
 
-
     def info(self):
         """Print all necessary information about the class"""
         in_dict = self.pa.get_device_info_by_index(self.in_idx)
         out_dict = self.pa.get_device_info_by_index(self.out_idx)
-
-        msg = f"""Audioio: sr={self.sr}, bs={self.bs}, \n 
-                Input: {in_dict['name']}, index: {in_dict['index']}, channels: {in_dict['maxInputChannels']}, \n 
-                Output: {out_dict['name']}, index: {out_dict['index']}, channels: {out_dict['maxOutputChannels']}"""
+        msg = f"""Audioio: sr={self.sr}, bs={self.bs},
+Input: {in_dict['name']}, index: {in_dict['index']}, channels: {in_dict['maxInputChannels']},
+Output: {out_dict['name']}, index: {out_dict['index']}, channels: {out_dict['maxOutputChannels']}."""
         print(msg)
 
     def get_devices(self, item="all"):
-        """Print audio all available devices"""
+        """Print all available devices"""
         if item == "all":
             for i in range(self.pa.get_device_count()):
                 print(self.pa.get_device_info_by_index(i))
@@ -108,7 +106,7 @@ class BasicAudioio(object):
                 print(self.pa.get_device_info_by_index(i)[item])
 
     def set_device(self, in_device=0, out_device=1):
-
+        """Set inout device"""
         if isinstance(in_device, int):
             self.in_idx = in_device
         elif in_device == 'default' or in_device == 'Default':
