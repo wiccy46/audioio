@@ -16,7 +16,6 @@ class TestRecord(unittest.TestCase):
     def test_stream_open(self):
         """test recording """
         aio = Audioio(sr=44100, bs=256)
-
         # Check if stream is open
         # 1 Check stream open
         aio.record(gain=[0.5])   # Need a better way to validate
