@@ -18,7 +18,8 @@ class BasicAudioio(object):
     TODO: make sure everytime a new device is set, the parameters are updated.
     """
 
-    def __init__(self, sr=44100, bs=1024, in_device=0, out_device=1):
+    def __init__(self, sr=44100, bs=1024, device=[None, None]):
+
         self.sr = sr
         self.bs = bs
         self.pa = pyaudio.PyAudio()
@@ -37,15 +38,15 @@ class BasicAudioio(object):
         self.record_buffer = []  # A buffer for long audio being recorded in.
 
         self.empty_buffer = np.zeros((self.bs, 1), dtype=self._dtype)
-        if in_device is None:
+        if device[0] is None:
             self.in_idx = self.pa.get_default_input_device_info()['index']
         else:
-            self.in_idx = in_device
+            self.in_idx = device[0]
 
-        if out_device is None:
+        if device[1] is None:
             self.out_idx = self.pa.get_default_output_device_info()['index']
         else:
-            self.out_idx = out_device
+            self.out_idx = device[1]
         self.test_time = []
 
 
@@ -87,6 +88,7 @@ class BasicAudioio(object):
     def out_chan(self, val):
         self._out_idx = val
 
+    @property
     def info(self):
         """Print all necessary information about the class"""
         in_dict = self.pa.get_device_info_by_index(self.in_idx)
@@ -94,26 +96,29 @@ class BasicAudioio(object):
         msg = f"""Audioio: sr={self.sr}, bs={self.bs},
 Input: {in_dict['name']}, index: {in_dict['index']}, channels: {in_dict['maxInputChannels']},
 Output: {out_dict['name']}, index: {out_dict['index']}, channels: {out_dict['maxOutputChannels']}."""
-        print(msg)
+        return msg
 
     def get_devices(self, item="all"):
         """Print all available devices"""
+        device_info = []
         if item == "all":
             for i in range(self.pa.get_device_count()):
-                print(self.pa.get_device_info_by_index(i))
+                # print(type(self.pa.get_device_info_by_index(i)))
+                # print(self.pa.get_device_info_by_index(i))\
+                device_info.append(self.pa.get_device_info_by_index(i))
         else:
             for i in range(self.pa.get_device_count()):
-                print(self.pa.get_device_info_by_index(i)[item])
+                # print(self.pa.get_device_info_by_index(i)[item])
+                device_info.append(self.pa.get_device_info_by_index(i)[item])
+        return device_info
 
-    def set_device(self, in_device=0, out_device=1):
+    def set_device(self, device=[None, None]):
         """Set inout device"""
-        if isinstance(in_device, int):
-            self.in_idx = in_device
-        elif in_device == 'default' or in_device == 'Default':
+        if device[0] is None:
             self.in_idx = self.pa.get_default_input_device_info()['index']
-            
-        if isinstance(out_device, int):
-            self.out_idx = out_device
-        elif out_device == 'default' or out_device == 'Default':
+        else:
+            self.in_idx = device[0]
+        if device[1] is None:
             self.out_idx = self.pa.get_default_output_device_info()['index']
-
+        else:
+            self.out_idx = device[1]

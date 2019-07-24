@@ -1,10 +1,11 @@
 # console.py
 import logging
-import time
 from warnings import warn
+from numbers import Number
 import pyaudio
 import numpy as np 
 from . import BasicAudioio
+from .utils import decode, encode
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -12,8 +13,8 @@ _LOGGER.addHandler(logging.NullHandler())
 
 
 class Audioio(BasicAudioio):
-    def __init__(self, sr=44100, bs=1024, in_device=0, out_device=1):
-        super(Audioio, self).__init__(sr=sr, bs=bs, in_device=in_device, out_device=out_device)
+    def __init__(self, sr=44100, bs=1024, device=[None, None]):
+        super(Audioio, self).__init__(sr=sr, bs=bs, device=[None, None])
 
     # Implement a signal property that only has a getter and return the audio signal. 
     @property
@@ -22,16 +23,23 @@ class Audioio(BasicAudioio):
             warn(" There is no signal recorded, return [].")
             return []
         else:
-            _LOGGER.info(" Return recorded signal.")
-            # TODO figure out how to get the long signal. 
-            return []
+            # An alternate way is self.record_buffer.reshape(chunk*bs, chan)
+            return np.concatenate(self.record_buffer, 0)
 
-    def record(self, gain=[1.], block=False, dur=None):
-        """Recording Audio
+    def record(self, gain=1., dur=None, block=False, monitor=False):
+        """Record audio
 
-        Args:
-            gain : list or float
-                If list it will be individual channel gain, if float unison gain to all channels. 
+        Parameters
+        ----------
+        gain : float or list
+            If float, apply the gain on all channel, if list apply to individual channel accordingly.
+        dur : float, int or None
+            Default is None, the recording is switched on definitely. If number, record a fixed duration in seconds
+        block : bool
+            Decide whether record block the process or not. 
+        monitor : bool
+            Only available in non-blocking mode, allow directly monitoring as gained input will be sent to outputs.
+            Be vary of the feedback.
         """
         try:
             # restarting recording without closing stream, resulting an unstoppable stream.
@@ -46,12 +54,11 @@ class Audioio(BasicAudioio):
         # self.input_channels = self.pa.get_device_info_by_index(self.input_idx).get("maxInputChannels")
         if isinstance(gain, list):
             self.in_gains = gain
-        elif isinstance(gain, float):
+        elif isinstance(gain, Number):
             self.in_gains = np.full(self.in_chan, gain)
         else:
             raise TypeError("Gain needs to be either list of float.")
-
-
+        
         if dur is not None and block:
             _LOGGER.info(f" Block mode recording of {dur} seconds.")
             self.rec_dur = int(self.sr * dur)
@@ -64,9 +71,12 @@ class Audioio(BasicAudioio):
                 input_device_index=self.in_idx,
                 output_device_index=self.out_idx,
                 frames_per_buffer=self.bs)
-            
+            # Counting here. System is blocked in the foor loop. 
             for i in range(0, int(self.sr / self.bs * dur)):
-                self.record_buffer.append(np.frombuffer(rec_stream.read(self.bs), dtype=np.float32))
+                # Apply gain here. 
+                signal = decode(rec_stream.read(self.bs), self.in_chan)
+                signal *= self.in_gains  # Apply signal gain. 
+                self.record_buffer.append(signal)
             rec_stream.stop_stream()
             rec_stream.close()
             _LOGGER.info(" Record Finished.")
@@ -81,7 +91,7 @@ class Audioio(BasicAudioio):
         #         output=True,  # Removed input_device_index. As it should listen to all.
         #         input_device_index=self.in_idx,
         #         output_device_index=self.out_idx,
-        #         frames_per_buffer=self.bs,
+        #         frames_per_buffer=self.bs,        
         #         stream_callback=self._record_callback)
         #     self.rec_stream.start_stream()
 

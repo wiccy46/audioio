@@ -7,13 +7,11 @@ logging.basicConfig(level=logging.INFO)
 
 aio = Audioio(sr=44100, bs=256)
 # print(aio.get_devices())
-print(aio.sig)
-aio.record(gain=0.5, block=True, dur=3.)
+aio.record(gain=0.5, block=True, dur=1.)
 # time.sleep(3)
 
 output = np.array(aio.record_buffer)
 
-print(aio.sig)
 # print(output.shape)
 
 
