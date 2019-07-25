@@ -14,12 +14,10 @@ class BasicAudioio(object):
       bs (int): bs size or buffer size
       pa (PyAudio()): pyaudio class for audio streaming
 
-
     TODO: make sure everytime a new device is set, the parameters are updated.
     """
 
     def __init__(self, sr=44100, bs=1024, device=[None, None]):
-
         self.sr = sr
         self.bs = bs
         self.pa = pyaudio.PyAudio()
@@ -48,7 +46,6 @@ class BasicAudioio(object):
         else:
             self.out_idx = device[1]
         self.test_time = []
-
 
     @property
     def dtype(self):
@@ -122,3 +119,4 @@ Output: {out_dict['name']}, index: {out_dict['index']}, channels: {out_dict['max
             self.out_idx = self.pa.get_default_output_device_info()['index']
         else:
             self.out_idx = device[1]
+            
