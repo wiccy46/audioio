@@ -46,17 +46,34 @@ class Console(Audioio):
         self.win.move(pos[0], pos[1])
         self.win.resize(size[0], size[1])
         self.win.setWindowTitle('Console')
+        # Create the main layouts. left for in/out, right for dropsdown + master. 
         self.main_layout = QVBoxLayout()
         self.left_layout = QHBoxLayout()
         self.right_layout = QHBoxLayout()
-        
-        
-        
+        # Create groups. 
+        self.make_device_group()
+        self.left_layout.addWidget(self.device_group)
+        self.main_layout.addLayout(self.left_layout)
         self.win.setCentralWidget(QWidget(self.win))
         self.win.centralWidget().setLayout(self.main_layout)
-        
-        
-        
         self.win.show()
         sys.exit(self.app.exec_()) 
-    
+        
+    def make_device_group(self):
+        self.device_group = QGroupBox("")
+        device_group_layout = QHBoxLayout()
+        self.input_dropdown = QComboBox()
+        self.input_dropdown.activated[str].connect(self.change_input)
+        inItem = []
+        for i in self.il:
+            inItem.append(i["name"] + " " + str(i['maxInputChannels']))
+        self.input_dropdown.addItems(inItem)
+        device_group_layout.addWidget(self.input_dropdown)
+        self.device_group.setLayout(device_group_layout)
+        
+    def change_input(self, text):
+        """Change the input device based on name"""
+        # This is not very efficient. 
+        for i in range(len(self.audio.il)):
+            if self.il[i]['name'] in text:
+                self.in_idx = self.audio.il[i]['index']
