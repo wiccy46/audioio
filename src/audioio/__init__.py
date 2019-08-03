@@ -12,4 +12,5 @@ finally:
 
 from .core import BasicAudioio
 from .audioio import Audioio
+from .gui import Console
 from .utils import dbamp
