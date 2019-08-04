@@ -19,7 +19,7 @@ class Console(Audioio):
     def __init__(self, size=(600, 400), pos=(500, 500),
          sr=44100, bs=1024, device=[None, None]):
         """Init a gui console for audio recording and routing. """
-        super(Console, self).__init__(sr=sr, bs=bs, device=device)
+        super(Console, self).__init__(sr=sr, bs=bs, device=device)  # Based on Audioio class. 
         self.app = QApplication(sys.argv)
         self.max_width = QDesktopWidget().screenGeometry().width()
         self.max_height = QDesktopWidget().screenGeometry().height()
@@ -32,16 +32,18 @@ class Console(Audioio):
         self.left_layout = QVBoxLayout()
         self.right_layout = QVBoxLayout()
         # Create groups. 
-        self.make_util_group()
-        self.left_layout.addWidget(self.device_group)
-        self.main_layout.addLayout(self.left_layout)
+        self.device_group = self.make_util_group()
+        self.right_layout = layout_add(self.right_layout, [self.device_group])
+        self.main_layout = layout_add(self.main_layout, [self.left_layout, self.right_layout])
         self.win.setCentralWidget(QWidget(self.win))
         self.win.centralWidget().setLayout(self.main_layout)
         self.win.show()
         sys.exit(self.app.exec_()) 
         
     def make_util_group(self):
-        self.device_group = QGroupBox("")
+        """create gui elements for input/output device selections.
+        Sampling rate, buffers size selections"""
+        device_group = QGroupBox("")
         util_group_layout = QVBoxLayout()
         self.input_dropdown = QComboBox()
         self.input_dropdown.activated[str].connect(self.change_input)
@@ -86,8 +88,9 @@ class Console(Audioio):
         bs_layout.addWidget(bs_label)
         bs_layout.addWidget(self.bs_edit)
         util_group_layout = layout_add(util_group_layout, [input_layout, output_layout, sr_layout, bs_layout])
-        self.device_group.setLayout(util_group_layout)
+        device_group.setLayout(util_group_layout)
         _LOGGER.debug("Created utility group")
+        return device_group
     
     def change_input(self, text):
         """Change the input device based on name"""
