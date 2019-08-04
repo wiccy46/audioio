@@ -3,8 +3,6 @@ import logging
 import numpy as np
 from . import Audioio
 from .utils import decode, encode
-
-
 _LOGGER = logging.getLogger(__name__)
 _LOGGER.addHandler(logging.NullHandler())
 try:
@@ -16,23 +14,6 @@ except ImportError:
     _LOGGER.error("audioio.gui requires PyQt5 to work. It couldn't import PyQt5.")
 
 from PyQt5.Qt import PYQT_VERSION_STR  # This is only for testing. 
-
-
-# class Gui(Audioio):
-#     def __init__(self, link=None):  # Use link to link with the aio class. 
-#         if link is None:
-#             # create a new aio
-#             pass
-#         else:
-#             if isinstance(aio, Audioio):
-#                 self.aio = aio
-#             else:
-#                 # print("Got error msg")
-#                 msg = "aio argument needs to be an Audioio object,"
-#                 " or None which will create a new Audioio obejct."
-#                 raise TypeError(msg)
-#     def checkqt(self):
-#         print("PyQt5 version: " + PYQT_VERSION_STR)
 
 class Console(Audioio):
     def __init__(self, size=(600, 400), pos=(500, 500),
@@ -47,11 +28,11 @@ class Console(Audioio):
         self.win.resize(size[0], size[1])
         self.win.setWindowTitle('Console')
         # Create the main layouts. left for in/out, right for dropsdown + master. 
-        self.main_layout = QVBoxLayout()
-        self.left_layout = QHBoxLayout()
-        self.right_layout = QHBoxLayout()
+        self.main_layout = QHBoxLayout()
+        self.left_layout = QVBoxLayout()
+        self.right_layout = QVBoxLayout()
         # Create groups. 
-        self.make_device_group()
+        self.make_util_group()
         self.left_layout.addWidget(self.device_group)
         self.main_layout.addLayout(self.left_layout)
         self.win.setCentralWidget(QWidget(self.win))
@@ -59,21 +40,60 @@ class Console(Audioio):
         self.win.show()
         sys.exit(self.app.exec_()) 
         
-    def make_device_group(self):
+    def make_util_group(self):
         self.device_group = QGroupBox("")
-        device_group_layout = QHBoxLayout()
+        util_group_layout = QVBoxLayout()
         self.input_dropdown = QComboBox()
         self.input_dropdown.activated[str].connect(self.change_input)
         inItem = []
         for i in self.il:
             inItem.append(i["name"] + " " + str(i['maxInputChannels']))
         self.input_dropdown.addItems(inItem)
-        device_group_layout.addWidget(self.input_dropdown)
-        self.device_group.setLayout(device_group_layout)
+        self.input_label = QLabel("Input")
+        self.output_label = QLabel("Output")
+        self.output_dropdown = QComboBox()
+        outItem = []
+        for i in self.ol:
+            outItem.append(i["name"] + " " + str(i['maxOutputChannels']))
+        self.output_dropdown.addItems(outItem)
+        self.output_dropdown.activated[str].connect(self.change_output)
+        sr_layout = QHBoxLayout()
+        sr_label = QLabel("Sampling Rate")
+        self.sr_edit = QLineEdit()
+        self.sr_edit.setText(str(self.sr))
+        sr_layout.addWidget(sr_label)
+        sr_layout.addWidget(self.sr_edit)
+        bs_layout = QHBoxLayout()
+        bs_label = QLabel("Buffer Size")
+        self.bs_edit = QLineEdit()
+        self.bs_edit.setText(str(self.bs))
+        bs_layout.addWidget(bs_label)
+        bs_layout.addWidget(self.bs_edit)
+        util_group_layout = self._add_widget(util_group_layout, [self.input_label, self.input_dropdown,
+                                              self.output_label, self.output_dropdown])
+        util_group_layout.addLayout(sr_layout)
+        util_group_layout.addLayout(bs_layout)
+        self.device_group.setLayout(util_group_layout)
+        _LOGGER.debug("Created utility group")
         
+    def _add_widget(self, layout, widgets):
+        """Add widgets to layout, take layout and give widgets as list to layout. Then return"""
+        for w in widgets:
+            layout.addWidget(w)
+        return layout
+    
     def change_input(self, text):
         """Change the input device based on name"""
         # This is not very efficient. 
-        for i in range(len(self.audio.il)):
+        _LOGGER.info("Input dropdown activate")
+        for i in range(len(self.il)):
             if self.il[i]['name'] in text:
-                self.in_idx = self.audio.il[i]['index']
+                self.in_idx = self.il[i]['index']
+                
+    def change_output(self, text):
+        """Change the output device based on name"""
+        _LOGGER.info("Output dropdown activate")
+        for i in range(len(self.ol)):
+            if self.ol[i]['name'] in text:
+                self.output_idx = self.ol[i]['index']
+                # Need to update the channels 

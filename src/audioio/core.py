@@ -81,10 +81,6 @@ class BasicAudioio(object):
         # Output channels 
         return self._out_chan
 
-    @out_chan.setter
-    def out_chan(self, val):
-        self._out_idx = val
-
     @property
     def info(self):
         """Print all necessary information about the class"""
