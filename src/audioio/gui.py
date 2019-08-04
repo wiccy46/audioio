@@ -2,7 +2,7 @@ import time, sys, threading
 import logging
 import numpy as np
 from . import Audioio
-from .utils import decode, encode
+from .utils import decode, encode, layout_add
 _LOGGER = logging.getLogger(__name__)
 _LOGGER.addHandler(logging.NullHandler())
 try:
@@ -49,42 +49,48 @@ class Console(Audioio):
         for i in self.il:
             inItem.append(i["name"] + " " + str(i['maxInputChannels']))
         self.input_dropdown.addItems(inItem)
-        self.input_label = QLabel("Input")
-        self.output_label = QLabel("Output")
+        input_label = QLabel("Input ")
+        input_layout = QHBoxLayout()
+        input_layout = layout_add(input_layout, [input_label, self.input_dropdown])
+        
+        output_label = QLabel("Output ")
         self.output_dropdown = QComboBox()
-        outItem = []
+        out_item = []
         for i in self.ol:
-            outItem.append(i["name"] + " " + str(i['maxOutputChannels']))
-        self.output_dropdown.addItems(outItem)
+            out_item.append(i["name"] + " " + str(i['maxOutputChannels']))
+        self.output_dropdown.addItems(out_item)
         self.output_dropdown.activated[str].connect(self.change_output)
+        output_layout = QHBoxLayout()
+        output_layout = layout_add(output_layout, [output_label, self.output_dropdown])
+        
         sr_layout = QHBoxLayout()
-        sr_label = QLabel("Sampling Rate")
-        self.sr_edit = QLineEdit()
-        self.sr_edit.setText(str(self.sr))
+        sr_label = QLabel("Sampling Rate (Hz)")
+        self.sr_edit = QComboBox()
+        sr_l = [96000, 88200, 48000, 44100, 44100//2, 44100//3, 44100//4]
+        sr_l = [str(x) for x in sr_l]
+        self.sr_edit.addItems(sr_l)
+        self.sr_edit.setCurrentIndex(3)
+        self.sr_edit.activated[str].connect(self.change_sr)
         sr_layout.addWidget(sr_label)
         sr_layout.addWidget(self.sr_edit)
+        
         bs_layout = QHBoxLayout()
         bs_label = QLabel("Buffer Size")
-        self.bs_edit = QLineEdit()
-        self.bs_edit.setText(str(self.bs))
+        self.bs_edit = QComboBox()
+        bs_l = [2048 * 2, 2048, 1024, 512, 256, 128, 64, 32, 16, 8]
+        bs_l = [str(x) for x in bs_l]
+        self.bs_edit.addItems(bs_l)
+        self.bs_edit.setCurrentIndex(2)
+        self.bs_edit.activated[str].connect(self.change_bs)
+        # self.bs_edit.setText(str(self.bs))
         bs_layout.addWidget(bs_label)
         bs_layout.addWidget(self.bs_edit)
-        util_group_layout = self._add_widget(util_group_layout, [self.input_label, self.input_dropdown,
-                                              self.output_label, self.output_dropdown])
-        util_group_layout.addLayout(sr_layout)
-        util_group_layout.addLayout(bs_layout)
+        util_group_layout = layout_add(util_group_layout, [input_layout, output_layout, sr_layout, bs_layout])
         self.device_group.setLayout(util_group_layout)
         _LOGGER.debug("Created utility group")
-        
-    def _add_widget(self, layout, widgets):
-        """Add widgets to layout, take layout and give widgets as list to layout. Then return"""
-        for w in widgets:
-            layout.addWidget(w)
-        return layout
     
     def change_input(self, text):
         """Change the input device based on name"""
-        # This is not very efficient. 
         _LOGGER.info("Input dropdown activate")
         for i in range(len(self.il)):
             if self.il[i]['name'] in text:
@@ -97,3 +103,13 @@ class Console(Audioio):
             if self.ol[i]['name'] in text:
                 self.output_idx = self.ol[i]['index']
                 # Need to update the channels 
+                
+    def change_sr(self, text):
+        """Change sr"""
+        _LOGGER.info("Sr dropdown activate")
+        self.sr = int(text)
+        
+    def change_bs(self, text):
+        """Change bs"""
+        _LOGGER.info("bs dropdown activate")
+        self.bs = int(text)    
