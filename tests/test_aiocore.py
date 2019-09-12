@@ -1,6 +1,6 @@
 # Test core parts
 import unittest
-from audioio.core import Audioio
+from audioio import Aiocore
 import logging
 logging.basicConfig(level=logging.WARNING)
 
@@ -8,12 +8,11 @@ class TestCore(unittest.TestCase):
     """Test App class in gui"""
 
     def setUp(self):
-        self.aio = Audioio()
+        self.aio = Aiocore()
 
     def test_dtype(self):
         """dtype is a property and unchangable"""
         self.assertEqual("float32", self.aio.dtype)
-
         try:
             self.aio.dtype = "float64"
         except AttributeError:

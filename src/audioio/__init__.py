@@ -10,7 +10,10 @@ except DistributionNotFound:
 finally:
     del get_distribution, DistributionNotFound
 
-from .core import BasicAudioio
-from .audioio import Audioio
-from .gui import Console
-from .utils import dbamp
+# from .core import BasicAudioio
+# from .audioio import Audioio
+# from .gui import Console
+# from .utils import dbamp
+
+from .core import Aiocore
+__all__ = ['Aiocore']
