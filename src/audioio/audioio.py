@@ -16,6 +16,8 @@ _LOGGER.addHandler(logging.NullHandler())
 MAX24BIT = 8388607
 
 class Audioio(BasicAudioio):
+    """Auidoio class
+    """
     def __init__(self, sr=44100, bs=1024, device=[None, None]):
         super(Audioio, self).__init__(sr=sr, bs=bs, device=device)
         self.silence = np.zeros((self.bs, self.out_chan))
