@@ -1,14 +1,15 @@
+"""core class of Audioio"""
+import logging
 import numpy as np
 import pyaudio
-import logging
-import time
 
 _LOGGER = logging.getLogger(__name__)
 _LOGGER.addHandler(logging.NullHandler())
 
 
 class Aiocore(object):
-    """Core class of the audioio, currently only dealing with float32, later to add more dtype in, such as int16
+    """Core class of the audioio, currently only dealing with float32, 
+    later to add more dtype in, such as int16.
 
     Attributes:
         sr : int
@@ -20,15 +21,11 @@ class Aiocore(object):
         dtype : float
             Const of audio data type, default to be 'float32' and currently noneditable
         input_index : int
-
-
-
-
     """
 
     def __init__(self, sr=44100, bs=1024, device_indices=(None, None)):
         """Aiocore init
-        
+
         Parameters
         ----------
         sr : int
@@ -36,13 +33,13 @@ class Aiocore(object):
         bs : int
             Block size, aka buffer size
         device : tuple or list
-            A tuple of input and output device index. By default None, which will opt for the device audio device. 
-
+            A tuple of input and output device index.
+            By default None, which will opt for the device audio device.
         """
         self.sr = sr
         self.bs = bs
         self.pa = pyaudio.PyAudio()
- 
+
         self._dtype = "float32"
         self._input_index = 0
         self._output_index = 1
@@ -50,7 +47,7 @@ class Aiocore(object):
         self._output_channels = 0
         self.input_gains = [1.]  # needs to be scaled based on the channels
         self.output_gains = [1.]
-        
+   
         self.silence = np.zeros((self.bs, 1), dtype=self.dtype)  # TODO check whether this complie to the output channels. Or maybe broadcast it to the correct output channels. 
         self.input_index = device_indices[0]
         self.output_index = device_indices[1]
