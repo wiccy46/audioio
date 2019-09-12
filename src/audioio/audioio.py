@@ -107,6 +107,10 @@ class Audioio(BasicAudioio):
         # out = audio_data.astype(np.float32)  # At this stage it is finalized 
         return signal, pyaudio.paContinue   
     
+    def _record_callback_monitor(self, in_data, frame_count, time_info, flag):
+        #  process audio here. 
+        return in_data, pyaudio.paContinue   
+    
     def _record_callback(self, in_data, frame_count, time_info, flag):
         """Callback for record stream"""
         signal = decode(in_data, self.in_chan) 
