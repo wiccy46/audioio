@@ -98,7 +98,7 @@ class Aiocore(object):
 
     @output_index.setter
     def output_index(self, val):
-        self._output_index = val
+        self._output_index = self.pa.get_default_output_device_info()['index'] if val is None else val
         self._output_channels = self.pa.get_device_info_by_index(self.output_index)['maxOutputChannels']
 
     @property

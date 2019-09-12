@@ -27,4 +27,5 @@ class TestCore(unittest.TestCase):
 
     def test_info(self):
         # Give info about the device
-        self.aio.info()
+        info = self.aio.info
+        print(info)
