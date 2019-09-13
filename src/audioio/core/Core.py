@@ -8,7 +8,7 @@ _LOGGER.addHandler(logging.NullHandler())
 
 
 class Aiocore(object):
-    """Core class of the audioio, currently only dealing with float32, 
+    """Core class of the audioio, currently only dealing with float32,
     later to add more dtype in, such as int16.
 
     Attributes:
@@ -47,11 +47,13 @@ class Aiocore(object):
         self._output_channels = 0
         self.input_gains = [1.]  # needs to be scaled based on the channels
         self.output_gains = [1.]
-   
-        self.silence = np.zeros((self.bs, 1), dtype=self.dtype)  # TODO check whether this complie to the output channels. Or maybe broadcast it to the correct output channels. 
+
+        # TODO check whether this complie to the output channels.
+        # TODO Or maybe broadcast it to the correct output channels.
+        self.silence = np.zeros((self.bs, 1), dtype=self.dtype)
         self.input_index = device_indices[0]
         self.output_index = device_indices[1]
-        self.test_time = []  # Currently not used. 
+        self.test_time = []  # Currently not used.
 
     @property
     def input_devices(self):
@@ -83,7 +85,7 @@ class Aiocore(object):
     @input_index.setter
     def input_index(self, val):
         self._input_index = self.pa.get_default_input_device_info()['index'] if val is None else val
-        self._input_channels = self.pa.get_device_info_by_index(self.input_index)['maxInputChannels'] 
+        self._input_channels = self.pa.get_device_info_by_index(self.input_index)['maxInputChannels']
 
     @property
     def input_channels(self):

@@ -10,5 +10,5 @@ except DistributionNotFound:
 finally:
     del get_distribution, DistributionNotFound
 
-from .core import Aiocore, Player
+from .core import Aiocore, Player, Recorder
 __all__ = ['core', 'gui']
