@@ -1,6 +1,6 @@
 # Test core parts
 import unittest
-from audioio.core import Player
+from src.audioio.core import Player
 import logging
 logging.basicConfig(level=logging.WARNING)
 

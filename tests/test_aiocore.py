@@ -1,6 +1,6 @@
 # Test core parts
 import unittest
-from audioio import Aiocore
+from src.audioio import Aiocore
 import logging
 logging.basicConfig(level=logging.WARNING)
 

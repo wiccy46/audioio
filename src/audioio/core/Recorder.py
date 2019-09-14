@@ -15,7 +15,7 @@ class Recorder(Aiocore):
         self.record_buffer = []
 
     def clear_record_buffer(self):
-        self.record_buffer = []  #TODO Consider using a fixed length for performance.
+        self.record_buffer = []  # TODO Consider using a fixed length for performance.
         
     @property
     def sig(self):
@@ -25,7 +25,6 @@ class Recorder(Aiocore):
         else:
             # An alternate way is self.record_buffer.reshape(chunk*bs, chan)
             return np.concatenate(self.record_buffer, 0)
-
 
     def record(self, gain=1., dur=None, block=False, monitor=False):
         """Record audio
@@ -84,7 +83,7 @@ class Recorder(Aiocore):
         """Callback for record stream"""
         signal = decode(in_data, self.input_channels)
         signal *= self.input_gains
-        #process 0- > find pitch
+        # process 0- > find pitch
         self.record_buffer.append(signal)
         # out = audio_data.astype(np.float32)  # At this stage it is finalized
         return signal, pyaudio.paContinue
@@ -118,7 +117,6 @@ class Recorder(Aiocore):
         self.record_stream.stop_stream()
         self.record_stream.close()
         _LOGGER.info(" Record Finished.")
-
 
     def stop(self):
         """Stop recording"""

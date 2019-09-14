@@ -2,6 +2,7 @@ import unittest
 import time
 import numpy as np
 import logging
+from src.audioio.core import Recorder
 logging.basicConfig(level=logging.INFO)
 
 class Test_Record(unittest.TestCase):
@@ -9,16 +10,15 @@ class Test_Record(unittest.TestCase):
 
     def setUp(self):
         """test recording """
-        from audioio.core import Recorder
         self.recorder = Recorder(sr=44100, bs=256)
 
     def tearDown(self):
         pass
     
     def test_import(self):
-        from audioio.core import Recorder
+        from src.audioio.core import Recorder
         self.recorder = Recorder(sr=44100, bs=256)
-        from audioio import Recorder
+        from src.audioio import Recorder
         self.recorder = Recorder(sr=44100, bs=256)
 
     def test_stream_open(self):

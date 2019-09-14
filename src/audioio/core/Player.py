@@ -14,4 +14,3 @@ class Player(Aiocore):
     def stop(self):
         """Stop audio whenever"""
         pass
-        

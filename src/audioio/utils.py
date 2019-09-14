@@ -1,14 +1,16 @@
 import numpy as np
 import time 
 
+
 def layout_add(layout, items):
     """Add widget or layout to layout. """
     for i in items:
         try:
             layout.addWidget(i)
-        except:
+        except:  #TODO test what kind of exception it throws. 
             layout.addLayout(i)
     return layout
+
 
 def dbamp(db):
     """Convert db to amplitude
