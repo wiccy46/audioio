@@ -5,7 +5,7 @@ import logging
 logging.basicConfig(level=logging.WARNING)
 
 
-class TestPlayer(unittest.TestCase):
+class Test_Player(unittest.TestCase):
     """Test App class in gui"""
 
     def setUp(self):

@@ -4,7 +4,8 @@ from audioio import Aiocore
 import logging
 logging.basicConfig(level=logging.WARNING)
 
-class TestCore(unittest.TestCase):
+
+class Test_Core(unittest.TestCase):
     """Test App class in gui"""
 
     def setUp(self):
@@ -18,11 +19,12 @@ class TestCore(unittest.TestCase):
         except AttributeError:
             print("test_code -> test_dtype: dtyp has no setter. Not supposed to...")
 
+    def test_current_info(self):
+        # Give info about the device
+        info = self.aio.info
+        print(info)
+
     def test_access_audio_devices(self):
         """Check default audio device"""
         self.aio.get_devices()
 
-    def test_info(self):
-        # Give info about the device
-        info = self.aio.info
-        print(info)

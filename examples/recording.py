@@ -2,17 +2,15 @@ import time
 import numpy as np
 import matplotlib.pyplot as plt
 import logging
-from audioio import Audioio
-logging.basicConfig(level=logging.INFO)
+from audioio.core import Recorder
 
-aio = Audioio(sr=44100, bs=256)
-# print(aio.get_devices())
-# aio.record(gain=0.5, block=True, dur=1.)
+recorder = Recorder(sr=44100, bs=256)
 
-aio.record(gain=[0.4, 0.2], monitor=True)
+
+recorder.record(monitor=True)
 time.sleep(3)
 print('Before stop. ')
-aio.stop()
-sig = aio.sig
-plt.plot(sig)
+recorder.stop()
+signal_array = recorder.sig
+plt.plot(signal_array)
 plt.show()

@@ -2,7 +2,7 @@
 import unittest
 import pycodestyle
 
-class TestCodeFormat(unittest.TestCase):
+class Test_Code_Format(unittest.TestCase):
     """Pep-8 check"""
 
     def test_conformance(self):
