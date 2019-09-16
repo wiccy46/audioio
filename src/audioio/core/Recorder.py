@@ -101,7 +101,7 @@ class Recorder(Aiocore):
     def _block_mode_recording(self, dur):
         _LOGGER.info(f" Block mode recording of {dur} seconds.")
         self.record_duration = int(self.sr * dur)
-        print("Input channel: ", self.input_channels)
+
         self.record_stream = self.pa.open(
             format=pyaudio.paFloat32,
             channels=self.input_channels,
@@ -128,5 +128,4 @@ class Recorder(Aiocore):
             self.record_stream.close()
             _LOGGER.info("record stream close. ")
         except AttributeError:
-            print("Attribute error")
-            _LOGGER.info("self.record_stream not exsist.")
+            _LOGGER.error("self.record_stream not exsist.")
