@@ -11,7 +11,7 @@ _LOGGER.addHandler(logging.NullHandler())
 
 class Recorder(Aiocore):
     def __init__(self, sr=44100, bs=1024, device_indices=(None, None)):
-        super().__init__()
+        super().__init__(sr=sr, bs=bs, device_indices=device_indices)
         self.record_buffer = []
 
     def clear_record_buffer(self):
@@ -25,6 +25,15 @@ class Recorder(Aiocore):
         else:
             # An alternate way is self.record_buffer.reshape(chunk*bs, chan)
             return np.concatenate(self.record_buffer, 0)
+    
+    def check_old_stream(self):
+        try:
+            # Always check if there is an unclosed stream
+            self.record_stream.stop_stream()
+            self.record_stream.close()
+            _LOGGER.info("record stream close. ")
+        except AttributeError:
+            _LOGGER.info("self.record_stream not exsist.")
 
     def record(self, gain=1., dur=None, block=False, monitor=False):
         """Record audio
@@ -43,13 +52,7 @@ class Recorder(Aiocore):
             Only available in non-blocking mode,
             allow directly monitoring as gained input will be sent to outputs. Be vary of the feedback.
         """
-        try:
-            # Always check if there is an unclosed stream
-            self.record_stream.stop_stream()
-            self.record_stream.close()
-            _LOGGER.info("record stream close. ")
-        except AttributeError:
-            _LOGGER.info("self.record_stream not exsist.")
+        self.check_old_stream()
         _LOGGER.info(" Start Recording")
 
         self.record_buffer = []  # Clear the bufferlist for new recording.
