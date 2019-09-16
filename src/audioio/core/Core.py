@@ -84,7 +84,6 @@ class Aiocore(object):
 
     @input_index.setter
     def input_index(self, val):
-        print(val)
         self._input_index = self.pa.get_default_input_device_info()['index'] if val is None else val
         self._input_channels = self.pa.get_device_info_by_index(self.input_index)['maxInputChannels']
 

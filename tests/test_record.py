@@ -21,8 +21,11 @@ class Test_Record(unittest.TestCase):
         self.recorder = Recorder(sr=44100, bs=256)
         self.assertEqual(self.sr, 44100)
         from src.audioio import Recorder
-        self.recorder = Recorder(sr=44100, bs=256)
-        self.assertEqual(self.sr, 44100)
+        self.recorder = Recorder(sr=10, bs=20)
+        self.assertEqual(self.sr, 10)
+        self.assertEqual(self.bs, 20)
+
+
 
     def test_stream_open(self):
         """Make sure stream can be opened"""
